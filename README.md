@@ -15,3 +15,9 @@ Oh... And I love Solitaire as my time waste game : )
 - Graphic for the cards will be created by me, probably using Paint.net or Aseprite
 
 - Code will be written in Python
+
+### First version of the game can be run properly
+
+Finally achieved the first version of the game! Below you can see an image of it:
+
+![My First version of Solitaire](/images/version_1.png)

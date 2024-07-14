@@ -48,7 +48,7 @@ MIDDLE_Y = TOP_Y - MAT_HEIGHT - MAT_HEIGHT * VERTICAL_MARGIN_PERCENT
 X_SPACING = MAT_WIDTH + MAT_WIDTH * HORIZONTAL_MARGIN_PERCENT
 
 # Fan out cards stacked on each other
-CARD_VERTICAL_OFFSET = CARD_HEIGHT * CARD_SCALE * 0.3
+CARD_VERTICAL_OFFSET = CARD_HEIGHT * CARD_SCALE * 0.5
 
 # Constants for the piles for the game
 PILE_COUNT = 13
@@ -191,6 +191,10 @@ class Solitaire(arcade.Window):
 
     def on_mouse_press(self, x, y, button, key_modifiers):
         '''Handle mouse click events'''
+
+        if button != arcade.MOUSE_BUTTON_LEFT:
+            # Return
+            return
         
         # Get list of cards that were clicked
         cards = arcade.get_sprites_at_point((x, y), self.card_list)
@@ -295,43 +299,70 @@ class Solitaire(arcade.Window):
 
             # If we are over the same pile
             if pile_index == self.get_pile_for_card(self.held_cards[0]):
-                pass
+                # Reset position of cards
+                reset_position = True
 
             # If we are on a middle play pile
             elif pile_index >= PLAY_PILE_1 and pile_index <= PLAY_PILE_7:
                 # Check if there are no cards in the pile
                 if len(self.piles[pile_index]) > 0:
-                    # Move cards to proper position
+                    # Check if the top card is one value higher and a different color
                     top_card = self.piles[pile_index][-1]
-                    for i, dropped_card in enumerate(self.held_cards):
-                        dropped_card.position = top_card.center_x, \
-                                                top_card.center_y - CARD_VERTICAL_OFFSET * (i + 1)
-                else:
-                    # Are there no cards in the middle play pile?
-                    for i, dropped_card in enumerate(self.held_cards):
+                    if top_card.suit != self.held_cards[0].suit and \
+                        CARD_VALUES.index(top_card.value) - 1 == CARD_VALUES.index(self.held_cards[0].value):
                         # Move cards to proper position
-                        dropped_card.position = pile.center_x, \
-                                                pile.center_y - CARD_VERTICAL_OFFSET * i
+                        for i, dropped_card in enumerate(self.held_cards):
+                            dropped_card.position = top_card.center_x, \
+                                                    top_card.center_y - CARD_VERTICAL_OFFSET * (i + 1)
+                        reset_position = False
+                    else:
+                        # Reset position of cards
+                        reset_position = True
+                else:
+                    # If there are no cards in the pile
+                    # Move cards only if there is a 'K' card
+                    if self.held_cards[0].value == 'K':
+                        # Move cards to proper position
+                        for i, dropped_card in enumerate(self.held_cards):
+                            if i == 0:
+                                dropped_card.position = pile.position
+                                first_card = dropped_card
+                            else:
+                                dropped_card.position = first_card.center_x, \
+                                                    first_card.center_y - CARD_VERTICAL_OFFSET * (i + 1)
+                        reset_position = False
+                    else:
+                        # Reset position of cards
+                        reset_position = True
 
                 for card in self.held_cards:
                     # Cards are in the right position, but we need to move them to the right list
                     self.move_card_to_new_pile(card, pile_index)
-
-                # Success, don't reset position of cards
-                reset_position = False
             # If we are on a top play pile
             elif pile_index >= TOP_PILE_1 and pile_index <= TOP_PILE_4 and len(self.held_cards) == 1:
-                # Move position of card to pile
-                self.held_cards[0].position = pile.position
-                # Move card to card list
-                for card in self.held_cards:
-                    self.move_card_to_new_pile(card, pile_index)
-
-                reset_position = False
+                # If the pile is empty, only allow an Ace to be dropped
+                if len(self.piles[pile_index]) == 0 and self.held_cards[0].value == 'A':
+                    # Move card to card list
+                    self.move_card_to_new_pile(self.held_cards[0], pile_index)
+                    # Move card to pile
+                    self.held_cards[0].position = pile.position
+                    reset_position = False
+                # If the pile is not empty, only allow cards of the same suit and one higher value
+                elif len(self.piles[pile_index]) > 0:
+                    top_card = self.piles[pile_index][-1]
+                    if top_card.suit == self.held_cards[0].suit and \
+                        CARD_VALUES.index(top_card.value) + 1 == CARD_VALUES.index(self.held_cards[0].value):
+                        # Move card to card list
+                        self.move_card_to_new_pile(self.held_cards[0], pile_index)
+                        # Move card to pile
+                        self.held_cards[0].position = pile.position
+                        reset_position = False
+                else:
+                    # Reset position of cards
+                    reset_position = True
         if reset_position:
-            # We didn't drop the card on a mat. Reset its position
+            # Reset position of the cards
             for i, card in enumerate(self.held_cards):
-                # Move card to original position
                 card.position = self.held_cards_original_position[i]
 
         # We are no longer holding cards
