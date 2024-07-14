@@ -155,6 +155,27 @@ class Solitaire(arcade.Window):
         if len(self.held_cards) == 0:
             return
 
+        # Find the closest mat that the card is over 
+        # (in case there are more)
+        pile, distance = arcade.get_closest_sprite(self.held_cards[0], self.pile_mat_list)
+        reset_position = True
+
+        # Check if we are in contact with the closest mat
+        if arcade.check_for_collision(self.held_cards[0], pile):
+            # For each held card, move it to the pile we dropped it on
+            for i, card in enumerate(self.held_cards):
+                # Move card to the pile
+                card.position = pile.position
+            
+            # Success, don't reset position of cards
+            reset_position = False
+
+        if reset_position:
+            # We didn't drop the card on a mat. Reset its position
+            for i, card in enumerate(self.held_cards):
+                # Move card to original position
+                card.position = self.held_cards_original_position[i]
+
         # We are no longer holding cards
         self.held_cards = []
 
