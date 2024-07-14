@@ -310,6 +310,12 @@ class Solitaire(arcade.Window):
             card.center_x += dx
             card.center_y += dy
 
+    def on_key_press(self, symbol: int, modifiers: int):
+        '''Handle key press events'''
+        if symbol == arcade.key.R:
+            # Restart the game
+            self.setup()
+
 def main():
     '''Main function to run the game'''
     window = Solitaire()
