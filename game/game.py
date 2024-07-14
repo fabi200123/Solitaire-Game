@@ -203,7 +203,25 @@ class Solitaire(arcade.Window):
             # Figure out which pile the card is in
             pile_index = self.get_pile_for_card(top_card)
 
-            if top_card.is_face_down:
+            if pile_index == BOTTOM_FACE_DOWN_PILE:
+                # Flip 3 cards
+                for i in range(3):
+                    # If we run out of cards, stop
+                    if len(self.piles[BOTTOM_FACE_DOWN_PILE]) == 0:
+                        break
+                    # Get the top card
+                    card = self.piles[BOTTOM_FACE_DOWN_PILE][-1]
+                    # Flip face up
+                    card.face_up()
+                    # Move card position to bottom-right face up pile
+                    card.position = self.pile_mat_list[BOTTOM_FACE_UP_PILE].position
+                    # Remove card from face down pile
+                    self.piles[BOTTOM_FACE_DOWN_PILE].remove(card)
+                    # Add card to face up pile
+                    self.piles[BOTTOM_FACE_UP_PILE].append(card)
+                    # Put on top in draw order
+                    self.pull_to_top(card)
+            elif top_card.is_face_down:
                 # Flip up the card
                 top_card.face_up()
             else:
@@ -219,6 +237,23 @@ class Solitaire(arcade.Window):
                     self.held_cards.append(card)
                     self.held_cards_original_position.append(card.position)
                     self.pull_to_top(card)
+        else:
+            # If clicked on mat instead of a card
+            mats = arcade.get_sprites_at_point((x, y), self.pile_mat_list)
+
+            if len(mats) > 0:
+                mat = mats[0]
+                mat_index = self.pile_mat_list.index(mat)
+
+                # If there are no cards on the mat
+                if mat_index == BOTTOM_FACE_DOWN_PILE and len(self.piles[BOTTOM_FACE_DOWN_PILE]) == 0:
+                    # Flip the deck back over so we can restart
+                    temp_list = self.piles[BOTTOM_FACE_UP_PILE].copy()
+                    for card in reversed(temp_list):
+                        card.face_down()
+                        self.piles[BOTTOM_FACE_UP_PILE].remove(card)
+                        self.piles[BOTTOM_FACE_DOWN_PILE].append(card)
+                        card.position = self.pile_mat_list[BOTTOM_FACE_DOWN_PILE].position
 
     def remove_card_from_pile(self, card):
         '''Remove the card from the pile'''
