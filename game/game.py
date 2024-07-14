@@ -3,6 +3,7 @@ Solitaire Game written in Python
 '''
 
 import arcade
+from card import Card
 
 
 # Constants
@@ -63,6 +64,9 @@ class Solitaire(arcade.Window):
         # Original location of cards we are dragging
         # They might need to get back
         self.held_cards_original_position = None
+
+        # Sprite list with all the mats the cards lay on
+        self.pile_mat_list = None
     
     def setup(self):
         '''Set up the game and also restart the game'''
@@ -73,6 +77,29 @@ class Solitaire(arcade.Window):
         # Original location of cards we are dragging
         # They might need to get back
         self.held_cards_original_position = []
+
+        # Create the small mats that the cards go on
+
+        # Sprite list with all the mats the cards lay on
+        self.pile_mat_list = arcade.SpriteList()
+
+        # Create the mats for the bottom face down and face up piles
+        for i in range(2):
+            pile_mat = arcade.SpriteSolidColor(MAT_WIDTH, MAT_HEIGHT, arcade.csscolor.DARK_OLIVE_GREEN)
+            pile_mat.position = START_X + i * X_SPACING, BOTTOM_Y
+            self.pile_mat_list.append(pile_mat)
+        
+        # Create the seven middle piles
+        for i in range(7):
+            pile_mat = arcade.SpriteSolidColor(MAT_WIDTH, MAT_HEIGHT, arcade.csscolor.DARK_OLIVE_GREEN)
+            pile_mat.position = START_X + i * X_SPACING, MIDDLE_Y
+            self.pile_mat_list.append(pile_mat)
+
+        # Create the top "play" piles
+        for i in range(4):
+            pile_mat = arcade.SpriteSolidColor(MAT_WIDTH, MAT_HEIGHT, arcade.csscolor.DARK_OLIVE_GREEN)
+            pile_mat.position = START_X + i * X_SPACING, TOP_Y
+            self.pile_mat_list.append(pile_mat)
         
         # Sprite list with all the cards
         self.card_list = arcade.SpriteList()
@@ -88,6 +115,9 @@ class Solitaire(arcade.Window):
         '''Render the screen'''
         # Clear the screen
         self.clear()
+
+        # Draw the mats the cards go on to
+        self.pile_mat_list.draw()
         
         # Draw the sprites
         self.card_list.draw()
