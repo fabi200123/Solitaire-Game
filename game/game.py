@@ -182,11 +182,21 @@ class Solitaire(arcade.Window):
             
             # Get the top card (might be a stack of cards)
             top_card = cards[-1]
+            # Figure out which pile the card is in
+            pile_index = self.get_pile_for_card(top_card)
 
             # All other cases, grab the face-up card we are clicking on
             self.held_cards = [top_card]
             self.held_cards_original_position = [self.held_cards[0].position]
             self.pull_to_top(self.held_cards[0])
+
+            # Check if there is a stack of cards, and grab those too
+            index = self.piles[pile_index].index(top_card)
+            for i in range(index + 1, len(self.piles[pile_index])):
+                card = self.piles[pile_index][i]
+                self.held_cards.append(card)
+                self.held_cards_original_position.append(card.position)
+                self.pull_to_top(card)
 
     def remove_card_from_pile(self, card):
         '''Remove the card from the pile'''
