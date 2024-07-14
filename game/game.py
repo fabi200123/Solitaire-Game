@@ -151,6 +151,24 @@ class Solitaire(arcade.Window):
         for card in self.card_list:
             self.piles[BOTTOM_FACE_DOWN_PILE].append(card)
 
+        # --- Deal out the cards
+
+        # Loop for each pile
+        for pile_no in range(PLAY_PILE_1, PLAY_PILE_7 + 1):
+            # Deal the right number of cards
+            for i in range(pile_no - PLAY_PILE_1 + 1):
+                # Pop the card off the deck we are dealing from
+                card = self.piles[BOTTOM_FACE_DOWN_PILE].pop()
+                # Add the card to the pile we are dealing to
+                self.piles[pile_no].append(card)
+                # Move card to the same position as the pile
+                card.position = self.pile_mat_list[pile_no].position
+                # Put on top in draw order
+                self.pull_to_top(card)
+
+            # Flip up the top cards
+            self.piles[pile_no][-1].face_up()
+
     def on_draw(self):
         '''Render the screen'''
         # Clear the screen
@@ -185,18 +203,22 @@ class Solitaire(arcade.Window):
             # Figure out which pile the card is in
             pile_index = self.get_pile_for_card(top_card)
 
-            # All other cases, grab the face-up card we are clicking on
-            self.held_cards = [top_card]
-            self.held_cards_original_position = [self.held_cards[0].position]
-            self.pull_to_top(self.held_cards[0])
+            if top_card.is_face_down:
+                # Flip up the card
+                top_card.face_up()
+            else:
+                # All other cases, grab the face-up card we are clicking on
+                self.held_cards = [top_card]
+                self.held_cards_original_position = [self.held_cards[0].position]
+                self.pull_to_top(self.held_cards[0])
 
-            # Check if there is a stack of cards, and grab those too
-            index = self.piles[pile_index].index(top_card)
-            for i in range(index + 1, len(self.piles[pile_index])):
-                card = self.piles[pile_index][i]
-                self.held_cards.append(card)
-                self.held_cards_original_position.append(card.position)
-                self.pull_to_top(card)
+                # Check if there is a stack of cards, and grab those too
+                index = self.piles[pile_index].index(top_card)
+                for i in range(index + 1, len(self.piles[pile_index])):
+                    card = self.piles[pile_index][i]
+                    self.held_cards.append(card)
+                    self.held_cards_original_position.append(card.position)
+                    self.pull_to_top(card)
 
     def remove_card_from_pile(self, card):
         '''Remove the card from the pile'''
