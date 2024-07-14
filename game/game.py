@@ -3,19 +3,54 @@ Solitaire Game written in Python
 '''
 
 import arcade
-from card import Card, CARD_SUITS, CARD_VALUES, CARD_SCALE, START_X, BOTTOM_Y
+
+
+# Constants
+CARD_SCALE = 0.6
+
+# CARD CONSTANTS
+CARD_VALUES = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K']
+CARD_SUITS = ['Hearts', 'Diamonds', 'Clubs', 'Spades']
+
+# DIMENSIONS
+CARD_WIDTH = 140 * CARD_SCALE
+CARD_HEIGHT = 190 * CARD_SCALE
+
+# MAT SIZE
+OVERSIZE_PERCENTAGE = 1.25
+MAT_WIDTH = int(CARD_WIDTH * OVERSIZE_PERCENTAGE)
+MAT_HEIGHT = int(CARD_HEIGHT * OVERSIZE_PERCENTAGE)
+
+# GAP SPACE BETWEEN MATS
+VERTICAL_MARGIN_PERCENT = 0.10
+HORIZONTAL_MARGIN_PERCENT = 0.10
+
+# The Y of the bottom row (2 piles)
+BOTTOM_Y = MAT_HEIGHT / 2 + MAT_HEIGHT * VERTICAL_MARGIN_PERCENT
+
+# The X of where to start putting things on the left side
+START_X = MAT_WIDTH / 2 + MAT_WIDTH * HORIZONTAL_MARGIN_PERCENT
 
 # Screen dimensions
-WIDTH = 1024
-HEIGHT = 768
+SCREEN_WIDTH = 1024
+SCREEN_HEIGHT = 768
 TITLE = "Solitaire Game"
+
+# The Y of the top row (4 piles)
+TOP_Y = SCREEN_HEIGHT - MAT_HEIGHT / 2 - MAT_HEIGHT * VERTICAL_MARGIN_PERCENT
+
+# The Y of the middle row (7 piles)
+MIDDLE_Y = TOP_Y - MAT_HEIGHT - MAT_HEIGHT * VERTICAL_MARGIN_PERCENT
+
+# How far apart each pile goes
+X_SPACING = MAT_WIDTH + MAT_WIDTH * HORIZONTAL_MARGIN_PERCENT
 
 class Solitaire(arcade.Window):
     '''Main Solitaire Game class'''
 
     def __init__(self):
         '''Initialize the game'''
-        super().__init__(WIDTH, HEIGHT, TITLE)
+        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE)
 
         # Sprite list with all the cards
         self.card_list = None
