@@ -47,6 +47,25 @@ MIDDLE_Y = TOP_Y - MAT_HEIGHT - MAT_HEIGHT * VERTICAL_MARGIN_PERCENT
 # How far apart each pile goes
 X_SPACING = MAT_WIDTH + MAT_WIDTH * HORIZONTAL_MARGIN_PERCENT
 
+# Fan out cards stacked on each other
+CARD_VERTICAL_OFFSET = CARD_HEIGHT * CARD_SCALE * 0.3
+
+# Constants for the piles for the game
+PILE_COUNT = 13
+BOTTOM_FACE_DOWN_PILE = 0
+BOTTOM_FACE_UP_PILE = 1
+PLAY_PILE_1 = 2
+PLAY_PILE_2 = 3
+PLAY_PILE_3 = 4
+PLAY_PILE_4 = 5
+PLAY_PILE_5 = 6
+PLAY_PILE_6 = 7
+PLAY_PILE_7 = 8
+TOP_PILE_1 = 9
+TOP_PILE_2 = 10
+TOP_PILE_3 = 11
+TOP_PILE_4 = 12
+
 class Solitaire(arcade.Window):
     '''Main Solitaire Game class'''
 
@@ -68,40 +87,48 @@ class Solitaire(arcade.Window):
 
         # Sprite list with all the mats the cards lay on
         self.pile_mat_list = None
+
+        # Create a list of lists, each holds a pile of cards
+        self.piles = None
     
     def setup(self):
         '''Set up the game and also restart the game'''
 
         # Sprite list with all the cards
-        self.card_list = []
+        self.held_cards = []
 
         # Original location of cards we are dragging
         # They might need to get back
         self.held_cards_original_position = []
 
-        # Create the small mats that the cards go on
+        # --- Create the small mats that the cards go on
 
         # Sprite list with all the mats the cards lay on
-        self.pile_mat_list = arcade.SpriteList()
+        self.pile_mat_list: arcade.SpriteList = arcade.SpriteList()
 
         # Create the mats for the bottom face down and face up piles
-        for i in range(2):
-            pile_mat = arcade.SpriteSolidColor(MAT_WIDTH, MAT_HEIGHT, arcade.csscolor.DARK_OLIVE_GREEN)
-            pile_mat.position = START_X + i * X_SPACING, BOTTOM_Y
-            self.pile_mat_list.append(pile_mat)
+        pile = arcade.SpriteSolidColor(MAT_WIDTH, MAT_HEIGHT, arcade.csscolor.DARK_OLIVE_GREEN)
+        pile.position = START_X, BOTTOM_Y
+        self.pile_mat_list.append(pile)
+
+        pile = arcade.SpriteSolidColor(MAT_WIDTH, MAT_HEIGHT, arcade.csscolor.DARK_OLIVE_GREEN)
+        pile.position = START_X + X_SPACING, BOTTOM_Y
+        self.pile_mat_list.append(pile)
         
         # Create the seven middle piles
         for i in range(7):
-            pile_mat = arcade.SpriteSolidColor(MAT_WIDTH, MAT_HEIGHT, arcade.csscolor.DARK_OLIVE_GREEN)
-            pile_mat.position = START_X + i * X_SPACING, MIDDLE_Y
-            self.pile_mat_list.append(pile_mat)
+            pile = arcade.SpriteSolidColor(MAT_WIDTH, MAT_HEIGHT, arcade.csscolor.DARK_OLIVE_GREEN)
+            pile.position = START_X + i * X_SPACING, MIDDLE_Y
+            self.pile_mat_list.append(pile)
 
         # Create the top "play" piles
         for i in range(4):
-            pile_mat = arcade.SpriteSolidColor(MAT_WIDTH, MAT_HEIGHT, arcade.csscolor.DARK_OLIVE_GREEN)
-            pile_mat.position = START_X + i * X_SPACING, TOP_Y
-            self.pile_mat_list.append(pile_mat)
-        
+            pile = arcade.SpriteSolidColor(MAT_WIDTH, MAT_HEIGHT, arcade.csscolor.DARK_OLIVE_GREEN)
+            pile.position = START_X + i * X_SPACING, TOP_Y
+            self.pile_mat_list.append(pile)
+
+        # --- Create, shuffle, and deal the cards
+
         # Sprite list with all the cards
         self.card_list = arcade.SpriteList()
 
@@ -115,7 +142,14 @@ class Solitaire(arcade.Window):
         # Shuffle the cards
         for pos1 in range(len(self.card_list)):
             pos2 = random.randrange(len(self.card_list))
-            self.card_list[pos1], self.card_list[pos2] = self.card_list[pos2], self.card_list[pos1]
+            self.card_list.swap(pos1, pos2)
+
+        # Create a list of lists, each holds a pile of cards.
+        self.piles = [[] for _ in range(PILE_COUNT)]
+
+        # Put all the cards in the bottom face down pile
+        for card in self.card_list:
+            self.piles[BOTTOM_FACE_DOWN_PILE].append(card)
 
     def on_draw(self):
         '''Render the screen'''
@@ -127,11 +161,20 @@ class Solitaire(arcade.Window):
         
         # Draw the sprites
         self.card_list.draw()
-    
+
+    def pull_to_top(self, card: arcade.Sprite):
+        '''Pull card to top of rendering order'''
+
+        # Remove card from list
+        self.card_list.remove(card)
+
+        # Add card to end of list
+        self.card_list.append(card)
+
     def on_mouse_press(self, x, y, button, key_modifiers):
         '''Handle mouse click events'''
         
-        # Save the position of where we clicked
+        # Get list of cards that were clicked
         cards = arcade.get_sprites_at_point((x, y), self.card_list)
 
         # If we clicked on a card, grab it
@@ -145,14 +188,25 @@ class Solitaire(arcade.Window):
             self.held_cards_original_position = [self.held_cards[0].position]
             self.pull_to_top(self.held_cards[0])
 
-    def on_mouse_motion(self, x, y, dx, dy):
-        '''Handle mouse motion events'''
-        
-        # If we are holding cards, move them with the mouse
-        if self.held_cards is not None:
-            for card in self.held_cards:
-                card.center_x += dx
-                card.center_y += dy
+    def remove_card_from_pile(self, card):
+        '''Remove the card from the pile'''
+        for pile in self.piles:
+            if card in pile:
+                pile.remove(card)
+                break
+
+    def get_pile_for_card(self, card):
+        '''Get the pile for the card'''
+        for index, pile in enumerate(self.piles):
+            if card in pile:
+                return index
+
+        return None
+
+    def move_card_to_new_pile(self, card, new_pile):
+        '''Move the card to a new pile'''
+        self.remove_card_from_pile(card)
+        self.piles[new_pile].append(card)
 
     def on_mouse_release(self, x, y, button, key_modifiers):
         '''Handle mouse release events'''
@@ -168,14 +222,45 @@ class Solitaire(arcade.Window):
 
         # Check if we are in contact with the closest mat
         if arcade.check_for_collision(self.held_cards[0], pile):
-            # For each held card, move it to the pile we dropped it on
-            for i, card in enumerate(self.held_cards):
-                # Move card to the pile
-                card.position = pile.position
-            
-            # Success, don't reset position of cards
-            reset_position = False
 
+            # Get the index of the pile we are over
+            pile_index = self.pile_mat_list.index(pile)
+
+            # If we are over the same pile
+            if pile_index == self.get_pile_for_card(self.held_cards[0]):
+                pass
+
+            # If we are on a middle play pile
+            elif pile_index >= PLAY_PILE_1 and pile_index <= PLAY_PILE_7:
+                # Check if there are no cards in the pile
+                if len(self.piles[pile_index]) > 0:
+                    # Move cards to proper position
+                    top_card = self.piles[pile_index][-1]
+                    for i, dropped_card in enumerate(self.held_cards):
+                        dropped_card.position = top_card.center_x, \
+                                                top_card.center_y - CARD_VERTICAL_OFFSET * (i + 1)
+                else:
+                    # Are there no cards in the middle play pile?
+                    for i, dropped_card in enumerate(self.held_cards):
+                        # Move cards to proper position
+                        dropped_card.position = pile.center_x, \
+                                                pile.center_y - CARD_VERTICAL_OFFSET * i
+
+                for card in self.held_cards:
+                    # Cards are in the right position, but we need to move them to the right list
+                    self.move_card_to_new_pile(card, pile_index)
+
+                # Success, don't reset position of cards
+                reset_position = False
+            # If we are on a top play pile
+            elif pile_index >= TOP_PILE_1 and pile_index <= TOP_PILE_4 and len(self.held_cards) == 1:
+                # Move position of card to pile
+                self.held_cards[0].position = pile.position
+                # Move card to card list
+                for card in self.held_cards:
+                    self.move_card_to_new_pile(card, pile_index)
+
+                reset_position = False
         if reset_position:
             # We didn't drop the card on a mat. Reset its position
             for i, card in enumerate(self.held_cards):
@@ -185,14 +270,13 @@ class Solitaire(arcade.Window):
         # We are no longer holding cards
         self.held_cards = []
 
-    def pull_to_top(self, card: arcade.Sprite):
-        '''Pull card to top of rendering order'''
+    def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
+        """ User moves mouse """
 
-        # Remove card from list
-        self.card_list.remove(card)
-
-        # Add card to end of list
-        self.card_list.append(card)
+        # If we are holding cards, move them with the mouse
+        for card in self.held_cards:
+            card.center_x += dx
+            card.center_y += dy
 
 def main():
     '''Main function to run the game'''
