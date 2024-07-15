@@ -14,6 +14,7 @@ class Card(arcade.Sprite):
 
         self.suit = suit
         self.value = value
+        self.colour = 'red' if suit in ['Hearts', 'Diamonds'] else 'black'
 
         # Image to use for the sprite when face up
         self.image_file_name = f"sprites/{self.suit}/{self.value}.jpg"
