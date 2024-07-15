@@ -3,6 +3,7 @@ Solitaire Game written in Python
 '''
 
 import arcade
+from win_screen import WinScreen
 import random
 from card import Card
 
@@ -308,7 +309,7 @@ class Solitaire(arcade.Window):
                 if len(self.piles[pile_index]) > 0:
                     # Check if the top card is one value higher and a different color
                     top_card = self.piles[pile_index][-1]
-                    if top_card.suit != self.held_cards[0].suit and \
+                    if top_card.colour != self.held_cards[0].colour and \
                         CARD_VALUES.index(top_card.value) - 1 == CARD_VALUES.index(self.held_cards[0].value):
                         # Move cards to proper position
                         for i, dropped_card in enumerate(self.held_cards):
@@ -368,6 +369,11 @@ class Solitaire(arcade.Window):
         # We are no longer holding cards
         self.held_cards = []
 
+        # --- Win check
+        if self.check_winning():
+            # Show the winning window
+            _ = WinScreen(int(SCREEN_WIDTH/5), int(SCREEN_HEIGHT/5), "You Win!")
+
     def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
         """ User moves mouse """
 
@@ -381,6 +387,13 @@ class Solitaire(arcade.Window):
         if symbol == arcade.key.R:
             # Restart the game
             self.setup()
+
+    def check_winning(self):
+        '''Check if the player has won the game'''
+        for pile in self.piles[TOP_PILE_1:]:
+            if len(pile) != 13:
+                return False
+        return True
 
 def main():
     '''Main function to run the game'''
