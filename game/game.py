@@ -194,7 +194,11 @@ class Solitaire(arcade.Window):
         '''Handle mouse click events'''
 
         if button != arcade.MOUSE_BUTTON_LEFT:
-            # Return
+            # Reset position of the cards
+            # If not, multiple cards can be selected
+            # when right-clicking for example
+            for i, card in enumerate(self.held_cards):
+                card.position = self.held_cards_original_position[i]
             return
         
         # Get list of cards that were clicked
