@@ -3,7 +3,6 @@ Solitaire Game written in Python
 '''
 
 import arcade
-from win_screen import WinScreen
 import random
 from card import Card
 
@@ -36,7 +35,7 @@ START_X = MAT_WIDTH / 2 + MAT_WIDTH * HORIZONTAL_MARGIN_PERCENT
 
 # Screen dimensions
 SCREEN_WIDTH = 1024
-SCREEN_HEIGHT = 768
+SCREEN_HEIGHT = 980
 TITLE = "Solitaire Game"
 
 # The Y of the top row (4 piles)
@@ -67,12 +66,37 @@ TOP_PILE_2 = 10
 TOP_PILE_3 = 11
 TOP_PILE_4 = 12
 
-class Solitaire(arcade.Window):
+class WinningView(arcade.View):
+    '''Winning Screen'''
+
+    def on_show_view(self):
+        '''Called when view is activated'''
+        # Reset the viewport, necessary if we have a scrolling game and we need
+        # to reset the viewport back to the start so we can see what we draw.
+        arcade.set_viewport(0, self.window.width, 0, self.window.height)
+
+    def on_draw(self):
+        '''Draw the view'''
+        self.clear()
+        arcade.set_background_color(arcade.color.GRAY)
+        arcade.draw_text("You Won!", self.window.width / 2, self.window.height / 2,
+                         arcade.color.BLACK, font_size=50, anchor_x="center")
+        arcade.draw_text("Press R to restart", self.window.width / 2, self.window.height / 2 - 75,
+                        arcade.color.BLACK, font_size=20, anchor_x="center")
+    
+    def on_key_press(self, symbol: int, modifiers: int):
+        """ If the user presses the mouse button, start the game. """
+        if symbol == arcade.key.R:
+            game_view = SolitaireView()
+            game_view.setup()
+            self.window.show_view(game_view)
+
+class SolitaireView(arcade.View):
     '''Main Solitaire Game class'''
 
     def __init__(self):
         '''Initialize the game'''
-        super().__init__(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE)
+        super().__init__()
 
         # Sprite list with all the cards
         self.card_list = None
@@ -91,6 +115,9 @@ class Solitaire(arcade.Window):
 
         # Create a list of lists, each holds a pile of cards
         self.piles = None
+
+        # Create a variable for winning state
+        self.won = False
     
     def setup(self):
         '''Set up the game and also restart the game'''
@@ -376,7 +403,8 @@ class Solitaire(arcade.Window):
         # --- Win check
         if self.check_winning():
             # Show the winning window
-            _ = WinScreen(int(SCREEN_WIDTH/5), int(SCREEN_HEIGHT/5), "You Win!")
+            view = WinningView()
+            self.window.show_view(view)
 
     def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
         """ User moves mouse """
@@ -401,8 +429,12 @@ class Solitaire(arcade.Window):
 
 def main():
     '''Main function to run the game'''
-    window = Solitaire()
-    window.setup()
+    window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE)
+    start_view = SolitaireView()
+    window.show_view(start_view)
+    start_view.setup()
+    if start_view.won:
+        window.show_view(WinningView())
     arcade.run()
 
 if __name__ == "__main__":
