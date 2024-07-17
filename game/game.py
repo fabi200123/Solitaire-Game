@@ -4,6 +4,7 @@ Solitaire Game written in Python
 
 import arcade
 import random
+import time
 from card import Card
 
 
@@ -118,6 +119,10 @@ class SolitaireView(arcade.View):
 
         # Create a variable for winning state
         self.won = False
+
+        # Timer to check how long the game has been running
+        self.start_time = time.time()
+
     
     def setup(self):
         '''Set up the game and also restart the game'''
@@ -207,6 +212,30 @@ class SolitaireView(arcade.View):
         
         # Draw the sprites
         self.card_list.draw()
+
+        # Draw the timer inside a gray rectangle
+        minutes = int(self.elapsed_time // 60)
+        seconds = int(self.elapsed_time % 60)
+        timer_text = f"{minutes:02d}:{seconds:02d}"
+        
+        # Define the rectangle dimensions
+        rect_x = SCREEN_WIDTH - 100
+        rect_y = SCREEN_HEIGHT - 40
+        rect_width = 80
+        rect_height = 30
+        
+        # Draw the gray rectangle
+        arcade.draw_rectangle_filled(rect_x, rect_y, rect_width, rect_height, arcade.color.LIGHT_GRAY)
+        
+        # Draw the timer text
+        arcade.draw_text(timer_text, rect_x, rect_y,
+                         arcade.color.BLACK, 20, anchor_x="center", anchor_y="center")
+
+    def on_update(self, delta_time: float):
+        '''Update the game'''
+
+        # Update the timer
+        self.elapsed_time = time.time() - self.start_time
 
     def pull_to_top(self, card: arcade.Sprite):
         '''Pull card to top of rendering order'''
@@ -341,7 +370,7 @@ class SolitaireView(arcade.View):
                     # Check if the top card is one value higher and a different color
                     top_card = self.piles[pile_index][-1]
                     if top_card.colour != self.held_cards[0].colour and \
-                        CARD_VALUES.index(top_card.value) - 1 == CARD_VALUES.index(self.held_cards[0].value):
+                        CARD_VALUES.index(top_card.value) - 1 == CARD_VALUES.index(self.held_cards[0].value) and top_card.suit != self.held_cards[0].suit:
                         # Move cards to proper position
                         for i, dropped_card in enumerate(self.held_cards):
                             dropped_card.position = top_card.center_x, \
@@ -366,10 +395,10 @@ class SolitaireView(arcade.View):
                     else:
                         # Reset position of cards
                         reset_position = True
-
-                for card in self.held_cards:
-                    # Cards are in the right position, but we need to move them to the right list
-                    self.move_card_to_new_pile(card, pile_index)
+                if not reset_position:
+                    for card in self.held_cards:
+                        # Cards are in the right position, but we need to move them to the right list
+                        self.move_card_to_new_pile(card, pile_index)
             # If we are on a top play pile
             elif pile_index >= TOP_PILE_1 and pile_index <= TOP_PILE_4 and len(self.held_cards) == 1:
                 # If the pile is empty, only allow an Ace to be dropped
@@ -418,6 +447,7 @@ class SolitaireView(arcade.View):
         '''Handle key press events'''
         if symbol == arcade.key.R:
             # Restart the game
+            self.start_time = time.time()
             self.setup()
 
     def check_winning(self):
