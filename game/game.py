@@ -123,6 +123,9 @@ class SolitaireView(arcade.View):
         # Timer to check how long the game has been running
         self.start_time = time.time()
 
+        # Number of points the user has
+        self.moves = 0
+
     
     def setup(self):
         '''Set up the game and also restart the game'''
@@ -227,8 +230,29 @@ class SolitaireView(arcade.View):
         # Draw the gray rectangle
         arcade.draw_rectangle_filled(rect_x, rect_y, rect_width, rect_height, arcade.color.LIGHT_GRAY)
         
+        # Draw the Time text
+        arcade.draw_text("Time", rect_x-90, rect_y,
+                         arcade.color.BLACK, 20, anchor_x="center", anchor_y="center")
+
         # Draw the timer text
         arcade.draw_text(timer_text, rect_x, rect_y,
+                         arcade.color.BLACK, 20, anchor_x="center", anchor_y="center")
+        
+        # Define the points rectangle dimensions
+        points_rect_x = SCREEN_WIDTH - 100
+        points_rect_y = SCREEN_HEIGHT - 80
+        points_rect_width = 80
+        points_rect_height = 30
+        
+        # Draw the gray rectangle
+        arcade.draw_rectangle_filled(points_rect_x, points_rect_y, points_rect_width, points_rect_height, arcade.color.LIGHT_GRAY)
+
+        # Draw the moves text
+        arcade.draw_text("Moves", points_rect_x-90, points_rect_y,
+                         arcade.color.BLACK, 20, anchor_x="center", anchor_y="center")
+        
+        # Draw the moves inside the rectangle
+        arcade.draw_text(str(self.moves), points_rect_x, points_rect_y,
                          arcade.color.BLACK, 20, anchor_x="center", anchor_y="center")
 
     def on_update(self, delta_time: float):
@@ -286,6 +310,7 @@ class SolitaireView(arcade.View):
                     self.piles[BOTTOM_FACE_UP_PILE].append(card)
                     # Put on top in draw order
                     self.pull_to_top(card)
+                self.moves += 1
             elif top_card.is_face_down:
                 # Flip up the card
                 top_card.face_up()
@@ -314,6 +339,7 @@ class SolitaireView(arcade.View):
                 if mat_index == BOTTOM_FACE_DOWN_PILE and len(self.piles[BOTTOM_FACE_DOWN_PILE]) == 0:
                     # Flip the deck back over so we can restart
                     temp_list = self.piles[BOTTOM_FACE_UP_PILE].copy()
+                    self.moves += 1
                     for card in reversed(temp_list):
                         card.face_down()
                         self.piles[BOTTOM_FACE_UP_PILE].remove(card)
@@ -376,6 +402,7 @@ class SolitaireView(arcade.View):
                             dropped_card.position = top_card.center_x, \
                                                     top_card.center_y - CARD_VERTICAL_OFFSET * (i + 1)
                         reset_position = False
+                        self.moves += 1
                     else:
                         # Reset position of cards
                         reset_position = True
@@ -392,6 +419,7 @@ class SolitaireView(arcade.View):
                                 dropped_card.position = first_card.center_x, \
                                                     first_card.center_y - CARD_VERTICAL_OFFSET * (i + 1)
                         reset_position = False
+                        self.moves += 1
                     else:
                         # Reset position of cards
                         reset_position = True
@@ -408,6 +436,7 @@ class SolitaireView(arcade.View):
                     # Move card to pile
                     self.held_cards[0].position = pile.position
                     reset_position = False
+                    self.moves += 1
                 # If the pile is not empty, only allow cards of the same suit and one higher value
                 elif len(self.piles[pile_index]) > 0:
                     top_card = self.piles[pile_index][-1]
@@ -418,6 +447,7 @@ class SolitaireView(arcade.View):
                         # Move card to pile
                         self.held_cards[0].position = pile.position
                         reset_position = False
+                        self.moves += 1
                 else:
                     # Reset position of cards
                     reset_position = True
