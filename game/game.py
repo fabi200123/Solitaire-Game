@@ -114,6 +114,9 @@ class SolitaireView(arcade.View):
         # Sprite list with all the mats the cards lay on
         self.pile_mat_list = None
 
+        # Timer to check how long the game has been running
+        self.elapsed_time = 0
+
         # Create a list of lists, each holds a pile of cards
         self.piles = None
 
