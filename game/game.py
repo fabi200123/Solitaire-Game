@@ -478,6 +478,7 @@ class SolitaireView(arcade.View):
         if symbol == arcade.key.R:
             # Restart the game
             self.start_time = time.time()
+            self.moves = 0
             self.setup()
 
     def check_winning(self):
