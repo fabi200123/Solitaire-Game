@@ -10,7 +10,8 @@ a = Analysis(
         ('sprites/cover/*.jpg', 'sprites/cover'),
         ('sprites/diamonds/*.jpg', 'sprites/diamonds'),
         ('sprites/hearts/*.jpg', 'sprites/hearts'),
-        ('sprites/spades/*.jpg', 'sprites/spades')
+        ('sprites/spades/*.jpg', 'sprites/spades'),
+        ('images/game_icon.ico', 'images/')
     ],
     hiddenimports=[],
     hookspath=[],
@@ -41,4 +42,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
+    icon=['images\\game_icon.ico'],
 )
