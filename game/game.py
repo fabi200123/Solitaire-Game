@@ -74,6 +74,60 @@ TOP_PILE_2 = 10
 TOP_PILE_3 = 11
 TOP_PILE_4 = 12
 
+class StartView(arcade.View):
+    '''Start Screen'''
+
+    def __init__(self):
+        '''Initialize the view'''
+        super().__init__()
+        self.hard = False
+
+    def on_show_view(self):
+        '''Called when view is activated'''
+        # Reset the viewport, necessary if we have a scrolling game and we need
+        # to reset the viewport back to the start so we can see what we draw.
+        arcade.set_viewport(0, self.window.width, 0, self.window.height)
+    
+    def on_draw(self):
+        '''Draw the view'''
+        self.clear()
+        arcade.set_background_color(arcade.color.DARK_SLATE_GRAY)
+
+        # Draw the title
+        arcade.draw_text("Solitaire Game", self.window.width / 2, self.window.height / 2 + 100,
+                         arcade.color.WHITE, font_size=50, anchor_x="center")
+
+        # Draw mode selection instructions
+        arcade.draw_text("Press N for Normal Mode", self.window.width / 2, self.window.height / 2 + 50,
+                         arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
+        arcade.draw_text("Press H for Hard Mode", self.window.width / 2, self.window.height / 2,
+                         arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
+        arcade.draw_text("Press Space to Start", self.window.width / 2, self.window.height / 2 - 50,
+                         arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
+
+        # Show selected mode
+        if self.hard:
+            arcade.draw_text("Hard Mode Selected", self.window.width / 2, self.window.height / 2 - 100,
+                             arcade.color.RED, font_size=20, anchor_x="center")
+            arcade.draw_text("Explanation: In Hard Mode, you will have 3 cards swapped on click from the bottom pile.", self.window.width / 2, self.window.height / 2 - 200,
+                             arcade.color.LIGHT_GRAY, font_size=14, anchor_x="center", multiline=True, width=self.window.width - 220)
+        else:
+            arcade.draw_text("Normal Mode Selected", self.window.width / 2, self.window.height / 2 - 100,
+                             arcade.color.GREEN, font_size=20, anchor_x="center")
+            arcade.draw_text("Explanation: In Normal Mode, you will have 1 card swapped on click from the bottom pile.", self.window.width / 2, self.window.height / 2 - 200,
+                             arcade.color.LIGHT_GRAY, font_size=14, anchor_x="center", multiline=True, width=self.window.width - 220)
+
+    def on_key_press(self, symbol: int, modifiers: int):
+        """ Handle key press events """
+        if symbol == arcade.key.SPACE:
+            game_view = SolitaireView()
+            game_view.setup(hard_mode=self.hard)
+            self.window.show_view(game_view)
+        elif symbol == arcade.key.N:
+            self.hard = False
+        elif symbol == arcade.key.H:
+            self.hard = True
+
 class WinningView(arcade.View):
     '''Winning Screen'''
 
@@ -137,11 +191,14 @@ class SolitaireView(arcade.View):
         self.moves = 0
 
     
-    def setup(self):
+    def setup(self, hard_mode: bool):
         '''Set up the game and also restart the game'''
 
         # Sprite list with all the cards
         self.held_cards = []
+
+        # Set hard mode
+        self.hard_mode = hard_mode
 
         # Original location of cards we are dragging
         # They might need to get back
@@ -309,41 +366,45 @@ class SolitaireView(arcade.View):
             pile_index = self.get_pile_for_card(top_card)
 
             if pile_index == BOTTOM_FACE_DOWN_PILE:
-                # # Flip 3 cards
-                # for i in range(3):
-                #     # If we run out of cards, stop
-                #     if len(self.piles[BOTTOM_FACE_DOWN_PILE]) == 0:
-                #         break
-                #     # Get the top card
-                #     card = self.piles[BOTTOM_FACE_DOWN_PILE][-1]
-                #     # Flip face up
-                #     card.face_up()
-                #     # Move card position to bottom-right face up pile
-                #     card.position = self.pile_mat_list[BOTTOM_FACE_UP_PILE].position
-                #     # Remove card from face down pile
-                #     self.piles[BOTTOM_FACE_DOWN_PILE].remove(card)
-                #     # Add card to face up pile
-                #     self.piles[BOTTOM_FACE_UP_PILE].append(card)
-                #     # Put on top in draw order
-                #     self.pull_to_top(card)
-                # Flip 1 card
-                # Get the top card
-                card = self.piles[BOTTOM_FACE_DOWN_PILE][-1]
-                # Flip face up
-                card.face_up()
-                # Move card position to bottom-right face up pile
-                card.position = self.pile_mat_list[BOTTOM_FACE_UP_PILE].position
-                # Remove card from face down pile
-                self.piles[BOTTOM_FACE_DOWN_PILE].remove(card)
-                # Add card to face up pile
-                self.piles[BOTTOM_FACE_UP_PILE].append(card)
-                # Put on top in draw order
-                self.pull_to_top(card)
-                self.moves += 1
-                self.moves += 1
+                if self.hard_mode:
+                    # Flip 3 cards
+                    for i in range(3):
+                        # If we run out of cards, stop
+                        if len(self.piles[BOTTOM_FACE_DOWN_PILE]) == 0:
+                            break
+                        # Get the top card
+                        card = self.piles[BOTTOM_FACE_DOWN_PILE][-1]
+                        # Flip face up
+                        card.face_up()
+                        # Move card position to bottom-right face up pile
+                        card.position = self.pile_mat_list[BOTTOM_FACE_UP_PILE].position
+                        # Remove card from face down pile
+                        self.piles[BOTTOM_FACE_DOWN_PILE].remove(card)
+                        # Add card to face up pile
+                        self.piles[BOTTOM_FACE_UP_PILE].append(card)
+                        # Put on top in draw order
+                        self.pull_to_top(card)
+                        self.moves += 1
+                else:
+                    # Flip 1 card
+                    # Get the top card
+                    card = self.piles[BOTTOM_FACE_DOWN_PILE][-1]
+                    # Flip face up
+                    card.face_up()
+                    # Move card position to bottom-right face up pile
+                    card.position = self.pile_mat_list[BOTTOM_FACE_UP_PILE].position
+                    # Remove card from face down pile
+                    self.piles[BOTTOM_FACE_DOWN_PILE].remove(card)
+                    # Add card to face up pile
+                    self.piles[BOTTOM_FACE_UP_PILE].append(card)
+                    # Put on top in draw order
+                    self.pull_to_top(card)
+                    self.moves += 1
             elif top_card.is_face_down:
-                # Flip up the card
-                top_card.face_up()
+                # Check if the card is the top card of the pile
+                if self.piles[pile_index][-1] == top_card:
+                    # Flip the card
+                    top_card.face_up()
             else:
                 # All other cases, grab the face-up card we are clicking on
                 self.held_cards = [top_card]
@@ -447,7 +508,7 @@ class SolitaireView(arcade.View):
                                 first_card = dropped_card
                             else:
                                 dropped_card.position = first_card.center_x, \
-                                                    first_card.center_y - CARD_VERTICAL_OFFSET * (i + 1)
+                                                    first_card.center_y
                         reset_position = False
                         self.moves += 1
                     else:
@@ -521,11 +582,8 @@ class SolitaireView(arcade.View):
 def main():
     '''Main function to run the game'''
     window = arcade.Window(SCREEN_WIDTH, SCREEN_HEIGHT, TITLE)
-    start_view = SolitaireView()
+    start_view = StartView()
     window.show_view(start_view)
-    start_view.setup()
-    if start_view.won:
-        window.show_view(WinningView())
     arcade.run()
 
 if __name__ == "__main__":
