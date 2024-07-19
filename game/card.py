@@ -9,7 +9,7 @@ FACE_DOWN_IMAGE = "./sprites/cover/cover.jpg"
 class Card(arcade.Sprite):
     '''Card class for Solitaire Game'''
     
-    def __init__(self, suit, value, scale=1):
+    def __init__(self, suit, value, scale: float =1):
         '''Initialize the card'''
 
         self.suit = suit

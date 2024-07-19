@@ -149,7 +149,7 @@ class WinningView(arcade.View):
     def on_key_press(self, symbol: int, modifiers: int):
         """ If the user presses the mouse button, start the game. """
         if symbol == arcade.key.R:
-            game_view = SolitaireView()
+            game_view = StartView()
             game_view.setup()
             self.window.show_view(game_view)
 
@@ -508,7 +508,7 @@ class SolitaireView(arcade.View):
                                 first_card = dropped_card
                             else:
                                 dropped_card.position = first_card.center_x, \
-                                                    first_card.center_y
+                                                    first_card.center_y - CARD_VERTICAL_OFFSET * i
                         reset_position = False
                         self.moves += 1
                     else:
@@ -570,7 +570,7 @@ class SolitaireView(arcade.View):
             # Restart the game
             self.start_time = time.time()
             self.moves = 0
-            self.setup()
+            self.setup(self.hard_mode)
 
     def check_winning(self):
         '''Check if the player has won the game'''
