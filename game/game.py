@@ -55,7 +55,7 @@ CARD_VERTICAL_OFFSET = CARD_HEIGHT * CARD_SCALE * 0.5
 CARD_VERTICAL_OFFSET_UNTURNED = CARD_HEIGHT * CARD_SCALE * 0.3
 
 # Fan out cards stacked on each other from the bottom pile
-CARD_HORIZONTAL_OFFSET = CARD_WIDTH * CARD_SCALE * 0.5
+CARD_HORIZONTAL_OFFSET = CARD_WIDTH * CARD_SCALE
 
 
 # Constants for the piles for the game
@@ -359,14 +359,18 @@ class SolitaireView(arcade.View):
 
         # If we clicked on a card, grab it
         if len(cards) > 0:
-            
+
             # Get the top card (might be a stack of cards)
             top_card = cards[-1]
+
             # Figure out which pile the card is in
             pile_index = self.get_pile_for_card(top_card)
 
             if pile_index == BOTTOM_FACE_DOWN_PILE:
                 if self.hard_mode:
+                    # Move all face up cards to the position of the face up mat pile
+                    for card in self.piles[BOTTOM_FACE_UP_PILE]:
+                        card.position = self.pile_mat_list[BOTTOM_FACE_UP_PILE].position
                     # Flip 3 cards
                     for i in range(3):
                         # If we run out of cards, stop
@@ -378,6 +382,7 @@ class SolitaireView(arcade.View):
                         card.face_up()
                         # Move card position to bottom-right face up pile
                         card.position = self.pile_mat_list[BOTTOM_FACE_UP_PILE].position
+                        card.center_x += CARD_HORIZONTAL_OFFSET * i
                         # Remove card from face down pile
                         self.piles[BOTTOM_FACE_DOWN_PILE].remove(card)
                         # Add card to face up pile
@@ -406,6 +411,12 @@ class SolitaireView(arcade.View):
                     # Flip the card
                     top_card.face_up()
             else:
+                # In case of hardmode, select only
+                # the top card of the face up card pile
+                # if not, return
+                if self.get_pile_for_card(top_card) == BOTTOM_FACE_UP_PILE: 
+                    if top_card != self.piles[BOTTOM_FACE_UP_PILE][-1]:
+                        return
                 # All other cases, grab the face-up card we are clicking on
                 self.held_cards = [top_card]
                 self.held_cards_original_position = [self.held_cards[0].position]
