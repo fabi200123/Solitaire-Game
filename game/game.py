@@ -309,23 +309,37 @@ class SolitaireView(arcade.View):
             pile_index = self.get_pile_for_card(top_card)
 
             if pile_index == BOTTOM_FACE_DOWN_PILE:
-                # Flip 3 cards
-                for i in range(3):
-                    # If we run out of cards, stop
-                    if len(self.piles[BOTTOM_FACE_DOWN_PILE]) == 0:
-                        break
-                    # Get the top card
-                    card = self.piles[BOTTOM_FACE_DOWN_PILE][-1]
-                    # Flip face up
-                    card.face_up()
-                    # Move card position to bottom-right face up pile
-                    card.position = self.pile_mat_list[BOTTOM_FACE_UP_PILE].position
-                    # Remove card from face down pile
-                    self.piles[BOTTOM_FACE_DOWN_PILE].remove(card)
-                    # Add card to face up pile
-                    self.piles[BOTTOM_FACE_UP_PILE].append(card)
-                    # Put on top in draw order
-                    self.pull_to_top(card)
+                # # Flip 3 cards
+                # for i in range(3):
+                #     # If we run out of cards, stop
+                #     if len(self.piles[BOTTOM_FACE_DOWN_PILE]) == 0:
+                #         break
+                #     # Get the top card
+                #     card = self.piles[BOTTOM_FACE_DOWN_PILE][-1]
+                #     # Flip face up
+                #     card.face_up()
+                #     # Move card position to bottom-right face up pile
+                #     card.position = self.pile_mat_list[BOTTOM_FACE_UP_PILE].position
+                #     # Remove card from face down pile
+                #     self.piles[BOTTOM_FACE_DOWN_PILE].remove(card)
+                #     # Add card to face up pile
+                #     self.piles[BOTTOM_FACE_UP_PILE].append(card)
+                #     # Put on top in draw order
+                #     self.pull_to_top(card)
+                # Flip 1 card
+                # Get the top card
+                card = self.piles[BOTTOM_FACE_DOWN_PILE][-1]
+                # Flip face up
+                card.face_up()
+                # Move card position to bottom-right face up pile
+                card.position = self.pile_mat_list[BOTTOM_FACE_UP_PILE].position
+                # Remove card from face down pile
+                self.piles[BOTTOM_FACE_DOWN_PILE].remove(card)
+                # Add card to face up pile
+                self.piles[BOTTOM_FACE_UP_PILE].append(card)
+                # Put on top in draw order
+                self.pull_to_top(card)
+                self.moves += 1
                 self.moves += 1
             elif top_card.is_face_down:
                 # Flip up the card
