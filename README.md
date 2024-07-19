@@ -46,3 +46,17 @@ The version has received some updates:
 - We have a Winning Screen which allows you to restart the game
 
 ![Version v0.1.1](/images/version_1_1.png)
+
+### Second version of the Game
+
+The game is now finally shaped and can be played properly:
+
+![Second version of Solitaire](/images/Version-v0.2.0.gif)
+
+The version has received some updates:
+
+- starting screen with different options
+- you can choose your gamemode HARD/EASY
+- cards are properly set on the mat
+- restart now gets you to the Starting Screen
+- fixed some more bugs
