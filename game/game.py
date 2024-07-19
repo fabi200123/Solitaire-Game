@@ -579,9 +579,11 @@ class SolitaireView(arcade.View):
         '''Handle key press events'''
         if symbol == arcade.key.R:
             # Restart the game
-            self.start_time = time.time()
-            self.moves = 0
-            self.setup(self.hard_mode)
+            game_view = StartView()
+            self.window.show_view(game_view)
+            # self.start_time = time.time()
+            # self.moves = 0
+            # self.setup(self.hard_mode)
 
     def check_winning(self):
         '''Check if the player has won the game'''
