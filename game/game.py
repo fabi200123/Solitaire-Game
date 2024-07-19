@@ -51,6 +51,13 @@ X_SPACING = MAT_WIDTH + MAT_WIDTH * HORIZONTAL_MARGIN_PERCENT
 # Fan out cards stacked on each other
 CARD_VERTICAL_OFFSET = CARD_HEIGHT * CARD_SCALE * 0.5
 
+# Fan out cards stacked on each other that are face down
+CARD_VERTICAL_OFFSET_UNTURNED = CARD_HEIGHT * CARD_SCALE * 0.3
+
+# Fan out cards stacked on each other from the bottom pile
+CARD_HORIZONTAL_OFFSET = CARD_WIDTH * CARD_SCALE * 0.5
+
+
 # Constants for the piles for the game
 PILE_COUNT = 13
 BOTTOM_FACE_DOWN_PILE = 0
@@ -201,12 +208,18 @@ class SolitaireView(arcade.View):
                 # Add the card to the pile we are dealing to
                 self.piles[pile_no].append(card)
                 # Move card to the same position as the pile
-                card.position = self.pile_mat_list[pile_no].position
+                if not card.is_face_up:
+                    card.position = (self.pile_mat_list[pile_no].center_x, 
+                                     self.pile_mat_list[pile_no].center_y - CARD_VERTICAL_OFFSET_UNTURNED * i)
+                else:
+                    card.position = self.pile_mat_list[pile_no].position
                 # Put on top in draw order
                 self.pull_to_top(card)
 
             # Flip up the top cards
             self.piles[pile_no][-1].face_up()
+            self.piles[pile_no][-1].position = self.pile_mat_list[pile_no].center_x, self.pile_mat_list[pile_no].center_y - CARD_VERTICAL_OFFSET_UNTURNED * (len(self.piles[pile_no]) - 1)
+
 
     def on_draw(self):
         '''Render the screen'''
