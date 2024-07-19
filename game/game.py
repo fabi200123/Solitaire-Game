@@ -150,7 +150,6 @@ class WinningView(arcade.View):
         """ If the user presses the mouse button, start the game. """
         if symbol == arcade.key.R:
             game_view = StartView()
-            game_view.setup()
             self.window.show_view(game_view)
 
 class SolitaireView(arcade.View):
