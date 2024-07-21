@@ -131,6 +131,12 @@ class StartView(arcade.View):
 class WinningView(arcade.View):
     '''Winning Screen'''
 
+    def __init__(self, time_taken: int = 0, moves: int = 0):
+        '''Initialize the view'''
+        super().__init__()
+        self.time_taken = time_taken
+        self.moves = moves
+
     def on_show_view(self):
         '''Called when view is activated'''
         # Reset the viewport, necessary if we have a scrolling game and we need
@@ -140,12 +146,29 @@ class WinningView(arcade.View):
     def on_draw(self):
         '''Draw the view'''
         self.clear()
+        # Draw the timer inside a gray rectangle
+        minutes = int(self.time_taken // 60)
+        seconds = int(self.time_taken % 60)
+        timer_text = f"{minutes:02d}:{seconds:02d}"
+
         arcade.set_background_color(arcade.color.GRAY)
-        arcade.draw_text("You Won!", self.window.width / 2, self.window.height / 2,
-                         arcade.color.BLACK, font_size=50, anchor_x="center")
-        arcade.draw_text("Press R to restart", self.window.width / 2, self.window.height / 2 - 75,
-                        arcade.color.BLACK, font_size=20, anchor_x="center")
-    
+        arcade.draw_text("Somehow you finished the game...", self.window.width / 2, self.window.height / 2,
+                         arcade.color.BLACK, font_size=40, anchor_x="center")
+        arcade.draw_text("You have successfully wasted...", self.window.width / 2, self.window.height / 2 - 50,
+                        arcade.color.BLACK, font_size=30, anchor_x="center")
+        # Show the time taken to win the game
+        arcade.draw_text("Time: ", self.window.width / 2, self.window.height / 2 - 100,
+                         arcade.color.BLACK, font_size=30, anchor_x="center")
+        arcade.draw_text(timer_text, self.window.width / 2 + 140, self.window.height / 2 - 100,
+                         arcade.color.BLACK, font_size=30, anchor_x="center")
+        # Show the number of moves to win the game
+        arcade.draw_text("Moves: ", self.window.width / 2, self.window.height / 2 - 150,
+                         arcade.color.BLACK, font_size=30, anchor_x="center")
+        arcade.draw_text(str(self.moves), self.window.width / 2 + 140, self.window.height / 2 - 150,
+                         arcade.color.BLACK, font_size=30, anchor_x="center")
+        arcade.draw_text("Note: Press R to restart", self.window.width / 2, self.window.height / 2 - 350,
+                        arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
+
     def on_key_press(self, symbol: int, modifiers: int):
         """ If the user presses the mouse button, start the game. """
         if symbol == arcade.key.R:
@@ -479,7 +502,7 @@ class SolitaireView(arcade.View):
         pile, distance = arcade.get_closest_sprite(self.held_cards[0], self.pile_mat_list)
         reset_position = True
 
-        # Check if we are in contact with the closest mat
+        # Check if we are in contact with the closest mat or the cards in it
         if arcade.check_for_collision(self.held_cards[0], pile):
 
             # Get the index of the pile we are over
@@ -552,6 +575,32 @@ class SolitaireView(arcade.View):
                 else:
                     # Reset position of cards
                     reset_position = True
+        else:
+            # Check if we are over a card pile
+            for pile_index in range(PILE_COUNT):
+                if len(self.piles[pile_index]) > 0:
+                    top_card = self.piles[pile_index][-1]
+                    if arcade.check_for_collision(self.held_cards[0], top_card):
+                        if pile_index >= PLAY_PILE_1 and pile_index <= PLAY_PILE_7:
+                            if top_card.colour != self.held_cards[0].colour and \
+                                    CARD_VALUES.index(top_card.value) - 1 == CARD_VALUES.index(self.held_cards[0].value):
+                                # Move cards to proper position
+                                for i, dropped_card in enumerate(self.held_cards):
+                                    dropped_card.position = top_card.center_x, \
+                                                            top_card.center_y - CARD_VERTICAL_OFFSET * (i + 1)
+                                reset_position = False
+                                self.moves += 1
+                                for card in self.held_cards:
+                                    self.move_card_to_new_pile(card, pile_index)
+                                break
+                        elif pile_index >= TOP_PILE_1 and pile_index <= TOP_PILE_4 and len(self.held_cards) == 1:
+                            if top_card.suit == self.held_cards[0].suit and \
+                                    CARD_VALUES.index(top_card.value) + 1 == CARD_VALUES.index(self.held_cards[0].value):
+                                self.move_card_to_new_pile(self.held_cards[0], pile_index)
+                                self.held_cards[0].position = top_card.position
+                                reset_position = False
+                                self.moves += 1
+                                break
         if reset_position:
             # Reset position of the cards
             for i, card in enumerate(self.held_cards):
@@ -563,7 +612,7 @@ class SolitaireView(arcade.View):
         # --- Win check
         if self.check_winning():
             # Show the winning window
-            view = WinningView()
+            view = WinningView(self.elapsed_time, self.moves)
             self.window.show_view(view)
 
     def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
@@ -586,6 +635,8 @@ class SolitaireView(arcade.View):
 
     def check_winning(self):
         '''Check if the player has won the game'''
+        if len(self.piles[TOP_PILE_1]) > 0:
+            return True
         for pile in self.piles[TOP_PILE_1:]:
             if len(pile) != 13:
                 return False
