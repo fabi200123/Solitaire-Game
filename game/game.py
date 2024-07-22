@@ -3,6 +3,7 @@ Solitaire Game written in Python
 '''
 
 import arcade
+import arcade.gui as gui
 import random
 import time
 from card import Card
@@ -74,6 +75,27 @@ TOP_PILE_2 = 10
 TOP_PILE_3 = 11
 TOP_PILE_4 = 12
 
+# Styles for the buttons
+unselected = {
+    "font_name": "Arial",
+    "font_size": 12,
+    "font_color": arcade.color.WHITE,
+    "bg_color": (21, 20, 20, 255),
+    "border_color": arcade.color.WHITE,
+    "border_width": 2,
+    "border_radius": 10,
+}
+
+selected = {
+    "font_name": "Arial",
+    "font_size": 12,
+    "font_color": arcade.color.BLACK,
+    "bg_color": arcade.color.LIGHT_GREEN,
+    "border_color": arcade.color.WHITE,
+    "border_width": 2,
+    "border_radius": 10,
+}
+
 class StartView(arcade.View):
     '''Start Screen'''
 
@@ -81,47 +103,120 @@ class StartView(arcade.View):
         '''Initialize the view'''
         super().__init__()
         self.hard = False
+        self.background = arcade.load_texture("sprites/screens/starting_screen.jpg")
+        self.ui_manager = gui.UIManager()
+        self.language = "EN"  # Default language
+
+        self.selected = selected
+        self.unselected = unselected
+
+        # Define the 2 buttons
+        self.en_button = gui.UIFlatButton()
+        self.ro_button = gui.UIFlatButton()
+    
+    def setup(self, en_style=selected, ro_style=unselected):
+        # Create a new UIManager instance
+        self.ui_manager = gui.UIManager()
+        self.ui_manager.enable()
+
+        # Create buttons
+        self.en_button = gui.UIFlatButton(text="EN", width=100, height=50, style=en_style)
+        self.en_button.on_click = self.on_click_en
+
+        self.ro_button = gui.UIFlatButton(text="RO", width=100, height=50, style=ro_style)
+        self.ro_button.on_click = self.on_click_ro
+
+        # Position buttons using UIAnchorWidget
+        self.en_button_anchor = gui.UIAnchorWidget(
+            anchor_x="center_x", anchor_y="bottom", child=self.en_button, align_x=-60, align_y=50
+        )
+        self.ro_button_anchor = gui.UIAnchorWidget(
+            anchor_x="center_x", anchor_y="bottom", child=self.ro_button, align_x=60, align_y=50
+        )
+
+        # Add buttons to UIManager
+        self.ui_manager.add(self.en_button_anchor)
+        self.ui_manager.add(self.ro_button_anchor)
+
+    def on_click_en(self, event):
+        self.language = "EN"
+        self.setup(self.selected, self.unselected)
+
+    def on_click_ro(self, event):
+        self.language = "RO"
+        self.setup(self.unselected, self.selected)
 
     def on_show_view(self):
         '''Called when view is activated'''
-        # Reset the viewport, necessary if we have a scrolling game and we need
-        # to reset the viewport back to the start so we can see what we draw.
+        self.setup()
         arcade.set_viewport(0, self.window.width, 0, self.window.height)
+    
+    def on_hide_view(self):
+        self.ui_manager.disable()
+
+    def on_update(self, delta_time):
+        self.ui_manager.on_update(delta_time)
     
     def on_draw(self):
         '''Draw the view'''
         self.clear()
         arcade.set_background_color(arcade.color.DARK_SLATE_GRAY)
 
+        # Draw the background image
+        arcade.draw_lrwh_rectangle_textured(0, 0, self.window.width, self.window.height, self.background)
+
         # Draw the title
-        arcade.draw_text("Solitaire Game", self.window.width / 2, self.window.height / 2 + 100,
+        arcade.draw_text("Solitaire", self.window.width / 2, self.window.height / 2 + 100,
                          arcade.color.WHITE, font_size=50, anchor_x="center")
 
         # Draw mode selection instructions
-        arcade.draw_text("Press N for Normal Mode", self.window.width / 2, self.window.height / 2 + 50,
-                         arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
-        arcade.draw_text("Press H for Hard Mode", self.window.width / 2, self.window.height / 2,
-                         arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
-        arcade.draw_text("Press Space to Start", self.window.width / 2, self.window.height / 2 - 50,
-                         arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
+        if self.language == "RO":
+            arcade.draw_text("Apasa N pentru a selecta Modul Normal", self.window.width / 2, self.window.height / 2 + 50,
+                             arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
+            arcade.draw_text("Apasa H pentru a selecta Modul Greu", self.window.width / 2, self.window.height / 2,
+                             arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
+            arcade.draw_text("Apasa Space pentru a incepe", self.window.width / 2, self.window.height / 2 - 50,
+                             arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
+        elif self.language == "EN":
+            arcade.draw_text("Press N for Normal Mode", self.window.width / 2, self.window.height / 2 + 50,
+                            arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
+            arcade.draw_text("Press H for Hard Mode", self.window.width / 2, self.window.height / 2,
+                            arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
+            arcade.draw_text("Press Space to Start", self.window.width / 2, self.window.height / 2 - 50,
+                            arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
 
         # Show selected mode
         if self.hard:
-            arcade.draw_text("Hard Mode Selected", self.window.width / 2, self.window.height / 2 - 100,
+            if self.language == "RO":
+                arcade.draw_text("Mod Greu Selectat", self.window.width / 2, self.window.height / 2 - 100,
                              arcade.color.RED, font_size=20, anchor_x="center")
-            arcade.draw_text("Explanation: In Hard Mode, you will have 3 cards swapped on click from the bottom pile.", self.window.width / 2, self.window.height / 2 - 200,
+                arcade.draw_text("Explicatie: In Modul Greu, vei avea 3 carti schimbate la apasarea pachetului de jos.", self.window.width / 2, self.window.height / 2 - 200,
                              arcade.color.LIGHT_GRAY, font_size=14, anchor_x="center", multiline=True, width=self.window.width - 220)
+            elif self.language == "EN":
+                arcade.draw_text("Hard Mode Selected", self.window.width / 2, self.window.height / 2 - 100,
+                                arcade.color.RED, font_size=20, anchor_x="center")
+                arcade.draw_text("Explanation: In Hard Mode, you will have 3 cards swapped on click from the bottom pile.", self.window.width / 2, self.window.height / 2 - 200,
+                                arcade.color.LIGHT_GRAY, font_size=14, anchor_x="center", multiline=True, width=self.window.width - 220)
         else:
-            arcade.draw_text("Normal Mode Selected", self.window.width / 2, self.window.height / 2 - 100,
+            if self.language == "RO":
+                arcade.draw_text("Mod Normal Selectat", self.window.width / 2, self.window.height / 2 - 100,
                              arcade.color.GREEN, font_size=20, anchor_x="center")
-            arcade.draw_text("Explanation: In Normal Mode, you will have 1 card swapped on click from the bottom pile.", self.window.width / 2, self.window.height / 2 - 200,
+                arcade.draw_text("Explicatie: In Modul Normal, vei avea 1 carte schimbata la apasarea pachetului de jos.", self.window.width / 2, self.window.height / 2 - 200,
                              arcade.color.LIGHT_GRAY, font_size=14, anchor_x="center", multiline=True, width=self.window.width - 220)
+            elif self.language == "EN":
+                arcade.draw_text("Normal Mode Selected", self.window.width / 2, self.window.height / 2 - 100,
+                                arcade.color.GREEN, font_size=20, anchor_x="center")
+                arcade.draw_text("Explanation: In Normal Mode, you will have 1 card swapped on click from the bottom pile.", self.window.width / 2, self.window.height / 2 - 200,
+                                arcade.color.LIGHT_GRAY, font_size=14, anchor_x="center", multiline=True, width=self.window.width - 220)
+
+        # Draw UI elements (buttons)
+        self.ui_manager.draw()
 
     def on_key_press(self, symbol: int, modifiers: int):
         """ Handle key press events """
         if symbol == arcade.key.SPACE:
             game_view = SolitaireView()
-            game_view.setup(hard_mode=self.hard)
+            game_view.setup(hard_mode=self.hard, language=self.language)
             self.window.show_view(game_view)
         elif symbol == arcade.key.N:
             self.hard = False
@@ -131,43 +226,66 @@ class StartView(arcade.View):
 class WinningView(arcade.View):
     '''Winning Screen'''
 
-    def __init__(self, time_taken: int = 0, moves: int = 0):
+    def __init__(self, time_taken: int = 0, moves: int = 0, language: str = "EN"):
         '''Initialize the view'''
         super().__init__()
         self.time_taken = time_taken
         self.moves = moves
+        self.language = language
 
-    def on_show_view(self):
+    def on_show_view(self, language = "EN"):
         '''Called when view is activated'''
         # Reset the viewport, necessary if we have a scrolling game and we need
         # to reset the viewport back to the start so we can see what we draw.
         arcade.set_viewport(0, self.window.width, 0, self.window.height)
 
-    def on_draw(self):
+    def on_draw(self, language = "EN"):
         '''Draw the view'''
+        language = self.language
         self.clear()
+        self.language = language
         # Draw the timer inside a gray rectangle
         minutes = int(self.time_taken // 60)
         seconds = int(self.time_taken % 60)
         timer_text = f"{minutes:02d}:{seconds:02d}"
-
+        
         arcade.set_background_color(arcade.color.GRAY)
-        arcade.draw_text("Somehow you finished the game...", self.window.width / 2, self.window.height / 2,
+        if self.language == "RO":
+            arcade.draw_text("Felicitari! Ai castigat!", self.window.width / 2, self.window.height / 2 + 100,
                          arcade.color.BLACK, font_size=40, anchor_x="center")
-        arcade.draw_text("You have successfully wasted...", self.window.width / 2, self.window.height / 2 - 50,
+            arcade.draw_text("Ai reusit sa termini jocul...", self.window.width / 2, self.window.height / 2,
+                         arcade.color.BLACK, font_size=40, anchor_x="center")
+            arcade.draw_text("Ai pierdut cu succes...", self.window.width / 2, self.window.height / 2 - 50,
                         arcade.color.BLACK, font_size=30, anchor_x="center")
-        # Show the time taken to win the game
-        arcade.draw_text("Time: ", self.window.width / 2, self.window.height / 2 - 100,
+            # Show the time taken to win the game
+            arcade.draw_text("Timp: ", self.window.width / 2, self.window.height / 2 - 100,
                          arcade.color.BLACK, font_size=30, anchor_x="center")
-        arcade.draw_text(timer_text, self.window.width / 2 + 140, self.window.height / 2 - 100,
+            arcade.draw_text(timer_text, self.window.width / 2 + 140, self.window.height / 2 - 100,
                          arcade.color.BLACK, font_size=30, anchor_x="center")
-        # Show the number of moves to win the game
-        arcade.draw_text("Moves: ", self.window.width / 2, self.window.height / 2 - 150,
+            # Show the number of moves to win the game
+            arcade.draw_text("Miscari: ", self.window.width / 2, self.window.height / 2 - 150,
                          arcade.color.BLACK, font_size=30, anchor_x="center")
-        arcade.draw_text(str(self.moves), self.window.width / 2 + 140, self.window.height / 2 - 150,
+            arcade.draw_text(str(self.moves), self.window.width / 2 + 140, self.window.height / 2 - 150,
                          arcade.color.BLACK, font_size=30, anchor_x="center")
-        arcade.draw_text("Note: Press R to restart", self.window.width / 2, self.window.height / 2 - 350,
+            arcade.draw_text("Nota: Apasa R pentru a reveni la meniul de inceput", self.window.width / 2, self.window.height / 2 - 350,
                         arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
+        elif self.language == "EN":
+            arcade.draw_text("You have finished the game...", self.window.width / 2, self.window.height / 2,
+                            arcade.color.BLACK, font_size=40, anchor_x="center")
+            arcade.draw_text("You have successfully wasted...", self.window.width / 2, self.window.height / 2 - 50,
+                            arcade.color.BLACK, font_size=30, anchor_x="center")
+            # Show the time taken to win the game
+            arcade.draw_text("Time: ", self.window.width / 2, self.window.height / 2 - 100,
+                            arcade.color.BLACK, font_size=30, anchor_x="center")
+            arcade.draw_text(timer_text, self.window.width / 2 + 140, self.window.height / 2 - 100,
+                            arcade.color.BLACK, font_size=30, anchor_x="center")
+            # Show the number of moves to win the game
+            arcade.draw_text("Moves: ", self.window.width / 2, self.window.height / 2 - 150,
+                            arcade.color.BLACK, font_size=30, anchor_x="center")
+            arcade.draw_text(str(self.moves), self.window.width / 2 + 140, self.window.height / 2 - 150,
+                            arcade.color.BLACK, font_size=30, anchor_x="center")
+            arcade.draw_text("Note: Press R to get to Start", self.window.width / 2, self.window.height / 2 - 350,
+                            arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
 
     def on_key_press(self, symbol: int, modifiers: int):
         """ If the user presses the mouse button, start the game. """
@@ -178,12 +296,14 @@ class WinningView(arcade.View):
 class SolitaireView(arcade.View):
     '''Main Solitaire Game class'''
 
-    def __init__(self):
+    def __init__(self, language="EN"):
         '''Initialize the game'''
         super().__init__()
 
         # Sprite list with all the cards
         self.card_list = None
+
+        self.language = language
 
         arcade.set_background_color(arcade.color.AMAZON) # Set background color to Card Table Green (Amazon)
 
@@ -213,12 +333,15 @@ class SolitaireView(arcade.View):
         self.moves = 0
 
     
-    def setup(self, hard_mode: bool):
+    def setup(self, hard_mode: bool, language="EN"):
         '''Set up the game and also restart the game'''
 
         # Sprite list with all the cards
         self.held_cards = []
 
+        # Set the language
+        self.language = language
+        
         # Set hard mode
         self.hard_mode = hard_mode
 
@@ -326,8 +449,12 @@ class SolitaireView(arcade.View):
         arcade.draw_rectangle_filled(rect_x, rect_y, rect_width, rect_height, arcade.color.LIGHT_GRAY)
         
         # Draw the Time text
-        arcade.draw_text("Time", rect_x-90, rect_y,
+        if self.language == "RO":
+            arcade.draw_text("Timp", rect_x-90, rect_y,
                          arcade.color.BLACK, 20, anchor_x="center", anchor_y="center")
+        elif self.language == "EN":
+            arcade.draw_text("Time", rect_x-90, rect_y,
+                            arcade.color.BLACK, 20, anchor_x="center", anchor_y="center")
 
         # Draw the timer text
         arcade.draw_text(timer_text, rect_x, rect_y,
@@ -343,8 +470,12 @@ class SolitaireView(arcade.View):
         arcade.draw_rectangle_filled(points_rect_x, points_rect_y, points_rect_width, points_rect_height, arcade.color.LIGHT_GRAY)
 
         # Draw the moves text
-        arcade.draw_text("Moves", points_rect_x-90, points_rect_y,
+        if self.language == "RO":
+            arcade.draw_text("Miscari", points_rect_x-90, points_rect_y,
                          arcade.color.BLACK, 20, anchor_x="center", anchor_y="center")
+        elif self.language == "EN":
+            arcade.draw_text("Moves", points_rect_x-90, points_rect_y,
+                            arcade.color.BLACK, 20, anchor_x="center", anchor_y="center")
         
         # Draw the moves inside the rectangle
         arcade.draw_text(str(self.moves), points_rect_x, points_rect_y,
@@ -612,7 +743,7 @@ class SolitaireView(arcade.View):
         # --- Win check
         if self.check_winning():
             # Show the winning window
-            view = WinningView(self.elapsed_time, self.moves)
+            view = WinningView(self.elapsed_time, self.moves, language=self.language)
             self.window.show_view(view)
 
     def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
