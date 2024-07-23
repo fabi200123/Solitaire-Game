@@ -7,7 +7,7 @@ import arcade.gui as gui
 import random
 import time
 from card import Card, resource_path
-
+from fireworks import Firework, create_firework
 
 # Constants
 CARD_SCALE = 0.6
@@ -237,6 +237,8 @@ class WinningView(arcade.View):
         self.time_taken = time_taken
         self.moves = moves
         self.language = language
+        self.fireworks_list = []
+        self.next_firework_time = 0
 
     def on_show_view(self, language = "EN"):
         '''Called when view is activated'''
@@ -253,8 +255,10 @@ class WinningView(arcade.View):
         minutes = int(self.time_taken // 60)
         seconds = int(self.time_taken % 60)
         timer_text = f"{minutes:02d}:{seconds:02d}"
-        
-        arcade.set_background_color(arcade.color.GRAY)
+
+        # Draw the background image
+        arcade.draw_lrwh_rectangle_textured(0, 0, self.window.width, self.window.height, self.background)
+
         if self.language == "RO":
             arcade.draw_text("Felicitari! Ai castigat!", self.window.width / 2, self.window.height / 2 + 100,
                          arcade.color.BLACK, font_size=40, anchor_x="center")
@@ -291,6 +295,23 @@ class WinningView(arcade.View):
                             arcade.color.BLACK, font_size=30, anchor_x="center")
             arcade.draw_text("Note: Press R to get to Start", self.window.width / 2, self.window.height / 2 - 350,
                             arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
+
+        # Draw fireworks
+        for fireworks in self.fireworks_list:
+            fireworks.draw()
+
+    def on_update(self, delta_time):
+        '''Update the view'''
+        current_time = time.time()
+        if current_time > self.next_firework_time:
+            self.next_firework_time = current_time + random.uniform(0.5, 1.5)
+            firework_x = random.randint(100, self.window.width - 100)
+            firework_y = random.randint(200, self.window.height - 100)
+            self.fireworks_list.append(create_firework(firework_x, firework_y))
+
+        for fireworks in self.fireworks_list:
+            fireworks.update()
+        self.fireworks_list = [fireworks for fireworks in self.fireworks_list if len(fireworks) > 0]
 
     def on_key_press(self, symbol: int, modifiers: int):
         """ If the user presses the mouse button, start the game. """
