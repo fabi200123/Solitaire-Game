@@ -11,6 +11,7 @@ a = Analysis(
         ('sprites/diamonds/*.jpg', 'sprites/diamonds'),
         ('sprites/hearts/*.jpg', 'sprites/hearts'),
         ('sprites/spades/*.jpg', 'sprites/spades'),
+        ('sprites/screens/*.jpg', 'sprites/screens'),
         ('images/game_icon.ico', 'images/')
     ],
     hiddenimports=[],

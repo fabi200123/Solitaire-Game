@@ -6,7 +6,7 @@ import arcade
 import arcade.gui as gui
 import random
 import time
-from card import Card
+from card import Card, resource_path
 
 
 # Constants
@@ -96,6 +96,10 @@ selected = {
     "border_radius": 10,
 }
 
+# Screens background
+START_SCREEN = resource_path("sprites/screens/starting_screen.jpg")
+WINNING_SCREEN = resource_path("sprites/screens/starting_screen.jpg")
+
 class StartView(arcade.View):
     '''Start Screen'''
 
@@ -103,7 +107,7 @@ class StartView(arcade.View):
         '''Initialize the view'''
         super().__init__()
         self.hard = False
-        self.background = arcade.load_texture("sprites/screens/starting_screen.jpg")
+        self.background = arcade.load_texture(START_SCREEN)
         self.ui_manager = gui.UIManager()
         self.language = "EN"  # Default language
 
@@ -229,6 +233,7 @@ class WinningView(arcade.View):
     def __init__(self, time_taken: int = 0, moves: int = 0, language: str = "EN"):
         '''Initialize the view'''
         super().__init__()
+        self.background = arcade.load_texture(WINNING_SCREEN)
         self.time_taken = time_taken
         self.moves = moves
         self.language = language
