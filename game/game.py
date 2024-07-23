@@ -261,38 +261,38 @@ class WinningView(arcade.View):
 
         if self.language == "RO":
             arcade.draw_text("Felicitari! Ai castigat!", self.window.width / 2, self.window.height / 2 + 100,
-                         arcade.color.BLACK, font_size=40, anchor_x="center")
+                         arcade.color.WHITE, font_size=40, anchor_x="center")
             arcade.draw_text("Ai reusit sa termini jocul...", self.window.width / 2, self.window.height / 2,
-                         arcade.color.BLACK, font_size=40, anchor_x="center")
+                         arcade.color.WHITE, font_size=40, anchor_x="center")
             arcade.draw_text("Ai pierdut cu succes...", self.window.width / 2, self.window.height / 2 - 50,
-                        arcade.color.BLACK, font_size=30, anchor_x="center")
+                        arcade.color.WHITE, font_size=30, anchor_x="center")
             # Show the time taken to win the game
             arcade.draw_text("Timp: ", self.window.width / 2, self.window.height / 2 - 100,
-                         arcade.color.BLACK, font_size=30, anchor_x="center")
+                         arcade.color.WHITE, font_size=30, anchor_x="center")
             arcade.draw_text(timer_text, self.window.width / 2 + 140, self.window.height / 2 - 100,
-                         arcade.color.BLACK, font_size=30, anchor_x="center")
+                         arcade.color.WHITE, font_size=30, anchor_x="center")
             # Show the number of moves to win the game
             arcade.draw_text("Miscari: ", self.window.width / 2, self.window.height / 2 - 150,
-                         arcade.color.BLACK, font_size=30, anchor_x="center")
+                         arcade.color.WHITE, font_size=30, anchor_x="center")
             arcade.draw_text(str(self.moves), self.window.width / 2 + 140, self.window.height / 2 - 150,
-                         arcade.color.BLACK, font_size=30, anchor_x="center")
+                         arcade.color.WHITE, font_size=30, anchor_x="center")
             arcade.draw_text("Nota: Apasa R pentru a reveni la meniul de inceput", self.window.width / 2, self.window.height / 2 - 350,
                         arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
         elif self.language == "EN":
             arcade.draw_text("You have finished the game...", self.window.width / 2, self.window.height / 2,
-                            arcade.color.BLACK, font_size=40, anchor_x="center")
+                            arcade.color.WHITE, font_size=40, anchor_x="center")
             arcade.draw_text("You have successfully wasted...", self.window.width / 2, self.window.height / 2 - 50,
-                            arcade.color.BLACK, font_size=30, anchor_x="center")
+                            arcade.color.WHITE, font_size=30, anchor_x="center")
             # Show the time taken to win the game
             arcade.draw_text("Time: ", self.window.width / 2, self.window.height / 2 - 100,
-                            arcade.color.BLACK, font_size=30, anchor_x="center")
+                            arcade.color.WHITE, font_size=30, anchor_x="center")
             arcade.draw_text(timer_text, self.window.width / 2 + 140, self.window.height / 2 - 100,
-                            arcade.color.BLACK, font_size=30, anchor_x="center")
+                            arcade.color.WHITE, font_size=30, anchor_x="center")
             # Show the number of moves to win the game
             arcade.draw_text("Moves: ", self.window.width / 2, self.window.height / 2 - 150,
-                            arcade.color.BLACK, font_size=30, anchor_x="center")
+                            arcade.color.WHITE, font_size=30, anchor_x="center")
             arcade.draw_text(str(self.moves), self.window.width / 2 + 140, self.window.height / 2 - 150,
-                            arcade.color.BLACK, font_size=30, anchor_x="center")
+                            arcade.color.WHITE, font_size=30, anchor_x="center")
             arcade.draw_text("Note: Press R to get to Start", self.window.width / 2, self.window.height / 2 - 350,
                             arcade.color.LIGHT_GRAY, font_size=20, anchor_x="center")
 
