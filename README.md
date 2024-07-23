@@ -23,6 +23,18 @@ python game/game.py
 
 > **NOTE** You can reset the game by pressing the `R` key on your keyboard, besides that you have to use the left-click of your mouse to move cards.
 
+### Current version of Solitaire (v1.2.0)
+
+The current version of Solitaire consists of all the features added by the versions:
+
+- [v1.0.0](https://github.com/fabi200123/Solitaire-Game/releases/tag/v1.0.0)
+- [v1.1.0](https://github.com/fabi200123/Solitaire-Game/releases/tag/v1.1.0)
+- [v1.2.0](https://github.com/fabi200123/Solitaire-Game/releases/tag/v1.1.0)
+
+Below you can see a short gif with the game screens:
+
+![Solitaire v1.2.0](/images/Version-v1.2.0.gif)
+
 ### How did I do it?
 
 - Thought about the concept in my mind, tried to come up to something simmilar to the default Solitaire Game
