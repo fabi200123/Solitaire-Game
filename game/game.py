@@ -358,6 +358,9 @@ class SolitaireView(arcade.View):
         # Number of points the user has
         self.moves = 0
 
+        # Last click time for double-click detection
+        self.last_click_time = 0
+
     
     def setup(self, hard_mode: bool, language="EN"):
         '''Set up the game and also restart the game'''
@@ -532,7 +535,11 @@ class SolitaireView(arcade.View):
             for i, card in enumerate(self.held_cards):
                 card.position = self.held_cards_original_position[i]
             return
-        
+
+        curr_time = time.time()
+        double_click = curr_time - self.last_click_time < 0.3
+        self.last_click_time = curr_time
+
         # Get list of cards that were clicked
         cards = arcade.get_sprites_at_point((x, y), self.card_list)
 
@@ -545,7 +552,20 @@ class SolitaireView(arcade.View):
             # Figure out which pile the card is in
             pile_index = self.get_pile_for_card(top_card)
 
-            if pile_index == BOTTOM_FACE_DOWN_PILE:
+            # If we double-clicked, try to move the card to a top pile
+            if double_click and top_card.is_face_up:
+                for top_pile_index in range(TOP_PILE_1, TOP_PILE_4 + 1):
+                    # If the card is the top card of the pile
+                    if self.can_add_to_top_pile(top_card, top_pile_index):
+                        self.move_card_to_new_pile(top_card, top_pile_index)
+                        top_card.position = self.pile_mat_list[top_pile_index].position
+                        top_card.is_face_up = True
+                        self.pull_to_top(top_card)  # Adjust z-order
+                        self.moves += 1
+                        # --- Win check
+                        self.check_winning()
+                        return
+            elif pile_index == BOTTOM_FACE_DOWN_PILE:
                 if self.hard_mode:
                     # Move all face up cards to the position of the face up mat pile
                     for card in self.piles[BOTTOM_FACE_UP_PILE]:
@@ -626,6 +646,13 @@ class SolitaireView(arcade.View):
                         self.piles[BOTTOM_FACE_UP_PILE].remove(card)
                         self.piles[BOTTOM_FACE_DOWN_PILE].append(card)
                         card.position = self.pile_mat_list[BOTTOM_FACE_DOWN_PILE].position
+
+    def can_add_to_top_pile(self, card, pile_index):
+        '''Check if a card can be added to a top pile'''
+        if len(self.piles[pile_index]) == 0:
+            return card.value == 'A'
+        top_card = self.piles[pile_index][-1]
+        return top_card.suit == card.suit and CARD_VALUES.index(top_card.value) + 1 == CARD_VALUES.index(card.value)
 
     def remove_card_from_pile(self, card):
         '''Remove the card from the pile'''
@@ -767,10 +794,7 @@ class SolitaireView(arcade.View):
         self.held_cards = []
 
         # --- Win check
-        if self.check_winning():
-            # Show the winning window
-            view = WinningView(self.elapsed_time, self.moves, language=self.language)
-            self.window.show_view(view)
+        self.check_winning()
 
     def on_mouse_motion(self, x: float, y: float, dx: float, dy: float):
         """ User moves mouse """
@@ -794,8 +818,10 @@ class SolitaireView(arcade.View):
         '''Check if the player has won the game'''
         for pile in self.piles[TOP_PILE_1:]:
             if len(pile) != 13:
-                return False
-        return True
+                return
+        # Show the winning window
+        view = WinningView(self.elapsed_time, self.moves, language=self.language)
+        self.window.show_view(view)
 
 def main():
     '''Main function to run the game'''
